@@ -9,29 +9,44 @@
   <body>
     <div class="app-shell">
       <aside class="left-rail" aria-label="Workspace navigation">
-        <div class="brand-mark">DA</div>
-        <button class="rail-action active" type="button" title="New thread" aria-label="New thread">+</button>
+        <div class="brand-mark">
+          <span class="icon-mask" style="--icon: url('/assets/icons/database.svg')" aria-hidden="true"></span>
+          <span>DA</span>
+        </div>
+        <button class="rail-action active" type="button" title="New thread" aria-label="New thread">
+          <span class="icon-mask" style="--icon: url('/assets/icons/square-pen.svg')" aria-hidden="true"></span>
+        </button>
         <nav class="rail-nav" aria-label="Primary">
           <button class="rail-item active" type="button">
-            <span class="rail-icon">H</span>
+            <span class="rail-icon">
+              <span class="icon-mask" style="--icon: url('/assets/icons/message-square-text.svg')" aria-hidden="true"></span>
+            </span>
             <span>Home</span>
           </button>
           <button class="rail-item" type="button" disabled>
-            <span class="rail-icon">F</span>
+            <span class="rail-icon">
+              <span class="icon-mask" style="--icon: url('/assets/icons/file-spreadsheet.svg')" aria-hidden="true"></span>
+            </span>
             <span>Files</span>
           </button>
           <button class="rail-item" type="button" disabled>
-            <span class="rail-icon">R</span>
+            <span class="rail-icon">
+              <span class="icon-mask" style="--icon: url('/assets/icons/circle-play.svg')" aria-hidden="true"></span>
+            </span>
             <span>Runs</span>
           </button>
           <button class="rail-item" type="button" disabled>
-            <span class="rail-icon">T</span>
+            <span class="rail-icon">
+              <span class="icon-mask" style="--icon: url('/assets/icons/route.svg')" aria-hidden="true"></span>
+            </span>
             <span>Traces</span>
           </button>
         </nav>
         <div class="rail-bottom">
           <button class="rail-item" type="button" disabled>
-            <span class="rail-icon">S</span>
+            <span class="rail-icon">
+              <span class="icon-mask" style="--icon: url('/assets/icons/settings.svg')" aria-hidden="true"></span>
+            </span>
             <span>Settings</span>
           </button>
         </div>
@@ -44,9 +59,18 @@
             <h1 id="threadTitle">New Thread</h1>
           </div>
           <div class="top-actions" aria-label="Runtime status">
-            <span class="status-chip" id="datasetStatus">No dataset</span>
-            <span class="status-chip">Deterministic</span>
-            <span class="status-chip muted-chip">LangSmith local</span>
+            <span class="status-chip" id="datasetStatus">
+              <span class="icon-mask" style="--icon: url('/assets/icons/file-spreadsheet.svg')" aria-hidden="true"></span>
+              No dataset
+            </span>
+            <span class="status-chip">
+              <span class="icon-mask" style="--icon: url('/assets/icons/workflow.svg')" aria-hidden="true"></span>
+              Deterministic
+            </span>
+            <span class="status-chip muted-chip">
+              <span class="icon-mask" style="--icon: url('/assets/icons/hard-drive.svg')" aria-hidden="true"></span>
+              LangSmith local
+            </span>
           </div>
         </header>
 
@@ -70,6 +94,7 @@
 
             <form id="composerForm" class="composer">
               <label class="attach-button" title="Attach CSV">
+                <span class="icon-mask" style="--icon: url('/assets/icons/paperclip.svg')" aria-hidden="true"></span>
                 <span id="fileLabel">Attach CSV</span>
                 <input id="csvFile" name="csv_file" type="file" accept=".csv,text/csv" />
               </label>
@@ -86,7 +111,10 @@
                 placeholder="Dataset note"
                 autocomplete="off"
               />
-              <button id="sendButton" type="submit">Send</button>
+              <button id="sendButton" type="submit">
+                <span>Send</span>
+                <span class="icon-mask" style="--icon: url('/assets/icons/send-horizontal.svg')" aria-hidden="true"></span>
+              </button>
             </form>
           </section>
 
@@ -116,11 +144,19 @@
 
             <div class="tabs" role="tablist" aria-label="Inspector tabs">
               <button class="tab-button active" type="button" role="tab" aria-selected="true" data-tab="data">
+                <span class="icon-mask" style="--icon: url('/assets/icons/table.svg')" aria-hidden="true"></span>
                 Data
               </button>
-              <button class="tab-button" type="button" role="tab" aria-selected="false" data-tab="plan">Plan</button>
-              <button class="tab-button" type="button" role="tab" aria-selected="false" data-tab="trace">Trace</button>
+              <button class="tab-button" type="button" role="tab" aria-selected="false" data-tab="plan">
+                <span class="icon-mask" style="--icon: url('/assets/icons/workflow.svg')" aria-hidden="true"></span>
+                Plan
+              </button>
+              <button class="tab-button" type="button" role="tab" aria-selected="false" data-tab="trace">
+                <span class="icon-mask" style="--icon: url('/assets/icons/route.svg')" aria-hidden="true"></span>
+                Trace
+              </button>
               <button class="tab-button" type="button" role="tab" aria-selected="false" data-tab="output">
+                <span class="icon-mask" style="--icon: url('/assets/icons/braces.svg')" aria-hidden="true"></span>
                 Output
               </button>
             </div>

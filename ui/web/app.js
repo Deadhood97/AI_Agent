@@ -35,13 +35,23 @@ document.querySelectorAll("button").forEach((button) => {
   button.dataset.initiallyDisabled = String(button.disabled);
 });
 
+function createIcon(iconName) {
+  const icon = document.createElement("span");
+  icon.className = "icon-mask";
+  icon.style.setProperty("--icon", `url('/assets/icons/${iconName}.svg')`);
+  icon.setAttribute("aria-hidden", "true");
+  return icon;
+}
+
 function setStatus(text, mode = "") {
   els.runStatus.textContent = text;
   els.runStatus.className = `status-dot ${mode}`.trim();
 }
 
 function setDatasetStatus(text, mode = "") {
-  els.datasetStatus.textContent = text;
+  els.datasetStatus.textContent = "";
+  els.datasetStatus.appendChild(createIcon("file-spreadsheet"));
+  els.datasetStatus.appendChild(document.createTextNode(text));
   els.datasetStatus.className = `status-chip ${mode}`.trim();
 }
 

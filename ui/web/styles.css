@@ -95,15 +95,26 @@ p {
 }
 
 .brand-mark {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   width: 42px;
   height: 42px;
-  place-items: center;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
   margin: 0 auto;
   border: 1px solid var(--border-strong);
   border-radius: 8px;
   color: var(--text);
+  font-size: 0.58rem;
   font-weight: 900;
+  line-height: 1;
+}
+
+.brand-mark .icon-mask {
+  width: 18px;
+  height: 18px;
+  color: var(--accent);
 }
 
 .rail-action,
@@ -114,12 +125,14 @@ p {
 }
 
 .rail-action {
+  display: grid;
+  place-items: center;
   width: 42px;
   height: 42px;
   margin: 0 auto;
   background: var(--surface-elevated);
   color: var(--text);
-  font-size: 1.5rem;
+  font-size: 1.15rem;
 }
 
 .rail-nav,
@@ -214,6 +227,16 @@ h3 {
   letter-spacing: 0;
 }
 
+.icon-mask {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  flex: 0 0 auto;
+  background: currentColor;
+  mask: var(--icon) center / contain no-repeat;
+  -webkit-mask: var(--icon) center / contain no-repeat;
+}
+
 .muted,
 .subtle {
   color: var(--muted);
@@ -228,9 +251,10 @@ h3 {
 
 .status-chip,
 .status-dot {
-  display: inline-grid;
+  display: inline-flex;
   min-height: 30px;
   align-items: center;
+  gap: 7px;
   border: 1px solid var(--border);
   border-radius: 8px;
   background: var(--surface);
@@ -472,10 +496,11 @@ h3 {
 }
 
 .attach-button {
-  display: grid;
+  display: flex;
   min-width: 0;
   min-height: 44px;
   align-items: center;
+  gap: 9px;
   border: 1px dashed var(--border-strong);
   border-radius: 8px;
   background: #111419;
@@ -494,6 +519,10 @@ h3 {
 }
 
 #sendButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   min-height: 44px;
   border: 0;
   background: var(--accent-strong);
@@ -562,6 +591,10 @@ h3 {
 }
 
 .tab-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
   min-height: 34px;
   border: 0;
   background: transparent;
