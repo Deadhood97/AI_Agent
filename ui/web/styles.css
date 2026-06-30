@@ -128,6 +128,14 @@ p {
   gap: 10px;
 }
 
+.rail-nav {
+  align-content: start;
+}
+
+.rail-bottom {
+  align-content: end;
+}
+
 .rail-item {
   display: grid;
   gap: 4px;
@@ -280,6 +288,10 @@ h3 {
   min-height: 0;
   overflow: auto;
   padding: 28px;
+}
+
+.chat-thread:has(.empty-state) {
+  align-content: center;
 }
 
 .empty-state {
