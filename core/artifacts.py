@@ -27,6 +27,7 @@ class ArtifactStore:
         for folder in [
             "datasets",
             "metadata",
+            "briefings",
             "sessions",
             "turns",
             "analysis_outputs",

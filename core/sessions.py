@@ -19,6 +19,7 @@ def create_dataset_session(
     dataset_id: str,
     metadata: DatasetMetadata | dict,
     semantic_summary: str = "",
+    dataset_briefing: dict | None = None,
     suggested_questions: list[dict] | None = None,
     store: ArtifactStore | None = None,
 ) -> DatasetSession:
@@ -29,6 +30,7 @@ def create_dataset_session(
             "dataset_id": dataset_id,
             "metadata": DatasetMetadata.model_validate(metadata).model_dump(),
             "semantic_summary": semantic_summary,
+            "dataset_briefing": dataset_briefing,
             "memory_summary": "",
             "suggested_questions": suggested_questions or [],
             "turn_ids": [],

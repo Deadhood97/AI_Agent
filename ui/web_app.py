@@ -57,7 +57,8 @@ def _ingestion_response_payload(tools: DatasetTools, result) -> dict:
         "column_count": metadata.get("column_count"),
         "quality": metadata.get("quality", {}),
         "columns": _column_summary(metadata),
-        "suggested_questions": [suggestion.__dict__ for suggestion in result.suggested_questions],
+        "suggested_questions": [suggestion.model_dump() for suggestion in result.suggested_questions],
+        "dataset_briefing": result.dataset_briefing.model_dump(),
         "preview": preview.get("preview_rows", []),
     }
 
@@ -193,6 +194,7 @@ class AnalystWebHandler(BaseHTTPRequestHandler):
                 "analysis_plan": turn.analysis_plan.model_dump() if turn.analysis_plan else None,
                 "trace": turn.trace,
                 "output_key": turn.execution_result.output_key,
+                "chart_payload": turn.chart_payload.model_dump() if turn.chart_payload else None,
                 "serialized_output": (
                     turn.execution_result.serialized_output.model_dump()
                     if turn.execution_result.serialized_output

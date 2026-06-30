@@ -2,13 +2,12 @@ from __future__ import annotations
 
 from typing import Any
 
-from contracts import ConversationTurn, ResolvedIntent
+from contracts import ConversationTurn, ResolvedIntent, SuggestedQuestion
 from core.analysis_turns import AnalysisTurnService
 from core.artifacts import ArtifactStore
 from core.dataset_sessions import DatasetSessionService
 from core.ingestion import DatasetIngestionResult, DatasetIngestionService
 from core.kaggle_import import fetch_kaggle_dataset
-from core.question_suggestions import SuggestedQuestion
 
 
 class DatasetTools:

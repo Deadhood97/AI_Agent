@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from contracts import SuggestedQuestion
 from core.artifacts import ArtifactStore
 from core.csv_io import read_csv_bytes
 from core.dataframe_context import build_tool_context_payload
@@ -11,7 +12,7 @@ from core.langsmith_tracing import (
     langsmith_span,
     summarize_suggestions_for_langsmith,
 )
-from core.question_suggestions import SuggestedQuestion, suggest_questions
+from core.question_suggestions import suggest_questions
 from core.sessions import load_session
 
 
@@ -53,10 +54,7 @@ class DatasetSessionService:
             if session.suggested_questions:
                 suggestions = [
                     SuggestedQuestion(
-                        question=str(suggestion.get("question", "")),
-                        rationale=str(suggestion.get("rationale", "")),
-                        question_type=str(suggestion.get("question_type", "analysis")),
-                        columns=[str(column) for column in suggestion.get("columns", [])],
+                        **suggestion,
                     )
                     for suggestion in session.suggested_questions[:limit]
                 ]

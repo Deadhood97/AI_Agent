@@ -385,6 +385,15 @@ h3 {
   padding: 12px;
 }
 
+.chart-artifact {
+  display: grid;
+  gap: 12px;
+  border: 1px solid rgba(96, 165, 250, 0.3);
+  border-radius: 8px;
+  background: #111419;
+  padding: 12px;
+}
+
 .result-artifact-header {
   display: flex;
   align-items: center;
@@ -438,6 +447,55 @@ h3 {
 
 .artifact-note {
   font-size: 0.82rem;
+}
+
+.chart-kpi {
+  color: var(--accent);
+  font-size: 1.65rem;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.bar-chart {
+  display: grid;
+  gap: 9px;
+}
+
+.bar-row {
+  display: grid;
+  grid-template-columns: minmax(90px, 150px) minmax(100px, 1fr) minmax(36px, auto);
+  gap: 10px;
+  align-items: center;
+}
+
+.bar-label,
+.bar-value {
+  color: var(--muted);
+  font-size: 0.82rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bar-value {
+  color: var(--text);
+  font-weight: 800;
+  text-align: right;
+}
+
+.bar-track {
+  display: block;
+  height: 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--surface-elevated);
+}
+
+.bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--blue);
 }
 
 .starter-area {

@@ -5,6 +5,7 @@ from typing import Any
 from pydantic import Field
 
 from .base import ContractModel
+from .briefing import DatasetBriefing
 from .dataset import DatasetMetadata
 
 
@@ -13,6 +14,7 @@ class DatasetSession(ContractModel):
     dataset_id: str
     metadata: DatasetMetadata
     semantic_summary: str = ""
+    dataset_briefing: DatasetBriefing | None = None
     memory_summary: str = ""
     suggested_questions: list[dict[str, Any]] = Field(default_factory=list)
     turn_ids: list[str] = Field(default_factory=list)

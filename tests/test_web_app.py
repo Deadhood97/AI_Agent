@@ -88,6 +88,7 @@ class WebAppTests(unittest.TestCase):
                 self.assertEqual(answer_payload["analysis_plan"]["planner"], "deterministic")
                 self.assertEqual(answer_payload["serialized_output"]["kind"], "scalar")
                 self.assertEqual(answer_payload["serialized_output"]["value"], 30.0)
+                self.assertEqual(answer_payload["chart_payload"]["chart_type"], "kpi")
             finally:
                 server.shutdown()
                 server.server_close()
@@ -117,6 +118,8 @@ class WebAppTests(unittest.TestCase):
 
                     self.assertEqual(payload["row_count"], 2)
                     self.assertEqual(payload["filename"], "kaggle_owner_dataset_sales.csv")
+                    self.assertIn("dataset_briefing", payload)
+                    self.assertIn("kaggle_owner_dataset_sales.csv", payload["dataset_briefing"]["summary"])
                     self.assertEqual(payload["suggested_questions"][0]["question"], "What is the total revenue?")
                 finally:
                     server.shutdown()

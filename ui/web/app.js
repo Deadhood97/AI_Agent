@@ -214,6 +214,30 @@ function renderPreview(rows) {
   els.previewTable.appendChild(tbody);
 }
 
+function formatDatasetBriefing(payload, sourceLabel) {
+  const briefing = payload.dataset_briefing || {};
+  const lines = [
+    `Dataset loaded: ${payload.filename || sourceLabel}`,
+    briefing.summary || `${Number(payload.row_count).toLocaleString()} rows, ${Number(payload.column_count).toLocaleString()} columns.`,
+  ];
+
+  if (briefing.key_metrics && briefing.key_metrics.length) {
+    lines.push(`Likely metrics: ${briefing.key_metrics.join(", ")}`);
+  }
+  if (briefing.key_dimensions && briefing.key_dimensions.length) {
+    lines.push(`Useful dimensions: ${briefing.key_dimensions.join(", ")}`);
+  }
+  if (briefing.time_fields && briefing.time_fields.length) {
+    lines.push(`Time fields: ${briefing.time_fields.join(", ")}`);
+  }
+  if (briefing.quality_warnings && briefing.quality_warnings.length) {
+    const warning = briefing.quality_warnings[0];
+    lines.push(`Quality note: ${warning.message}`);
+  }
+  lines.push("Pick a starter prompt or ask your own follow-up.");
+  return lines.join("\n");
+}
+
 function appendOutputArtifact(bubble, output) {
   if (!output || !bubble.parentElement) {
     return;
@@ -258,6 +282,71 @@ function appendOutputArtifact(bubble, output) {
     value.className = "scalar-output";
     value.textContent = output.value === null || output.value === undefined ? "" : String(output.value);
     artifact.appendChild(value);
+  }
+
+  bubble.parentElement.appendChild(artifact);
+  els.chatThread.scrollTop = els.chatThread.scrollHeight;
+}
+
+function appendChartArtifact(bubble, chart, output) {
+  if (!chart || !output || !bubble.parentElement) {
+    return;
+  }
+
+  const artifact = document.createElement("section");
+  artifact.className = "chart-artifact";
+
+  const header = document.createElement("div");
+  header.className = "result-artifact-header";
+  const title = document.createElement("span");
+  title.textContent = chart.title || "Chart";
+  const meta = document.createElement("span");
+  meta.className = "subtle";
+  meta.textContent = chart.chart_type;
+  header.appendChild(title);
+  header.appendChild(meta);
+  artifact.appendChild(header);
+
+  if (chart.chart_type === "kpi") {
+    const value = document.createElement("strong");
+    value.className = "chart-kpi";
+    value.textContent = output.value === null || output.value === undefined ? "" : String(output.value);
+    artifact.appendChild(value);
+  } else if (chart.chart_type === "bar" && output.rows && output.rows.length) {
+    const rows = output.rows.slice(0, chart.top_n || 12);
+    const yColumn = chart.y || "count";
+    const maxValue = Math.max(...rows.map((row) => Number(row[yColumn]) || 0), 1);
+    const bars = document.createElement("div");
+    bars.className = "bar-chart";
+    rows.forEach((row) => {
+      const value = Number(row[yColumn]) || 0;
+      const item = document.createElement("div");
+      item.className = "bar-row";
+      const label = document.createElement("span");
+      label.className = "bar-label";
+      label.textContent = String(row[chart.x] ?? "");
+      const track = document.createElement("span");
+      track.className = "bar-track";
+      const fill = document.createElement("span");
+      fill.className = "bar-fill";
+      fill.style.width = `${Math.max((value / maxValue) * 100, 2)}%`;
+      track.appendChild(fill);
+      const number = document.createElement("span");
+      number.className = "bar-value";
+      number.textContent = String(value);
+      item.appendChild(label);
+      item.appendChild(track);
+      item.appendChild(number);
+      bars.appendChild(item);
+    });
+    artifact.appendChild(bars);
+  }
+
+  if (chart.rationale) {
+    const note = document.createElement("p");
+    note.className = "subtle artifact-note";
+    note.textContent = chart.rationale;
+    artifact.appendChild(note);
   }
 
   bubble.parentElement.appendChild(artifact);
@@ -315,9 +404,7 @@ function applyUploadPayload(payload, sourceLabel) {
   showTab("data");
 
   clearThreadWithMessage(
-    `Dataset loaded: ${payload.filename || sourceLabel}\n${Number(payload.row_count).toLocaleString()} rows, ${Number(
-      payload.column_count,
-    ).toLocaleString()} columns.\nPick a starter prompt or ask your own follow-up.`,
+    formatDatasetBriefing(payload, sourceLabel),
   );
 }
 
@@ -336,6 +423,7 @@ function applyAnswerPayload(payload, pendingBubble) {
     2,
   );
   appendOutputArtifact(pendingBubble, payload.serialized_output);
+  appendChartArtifact(pendingBubble, payload.chart_payload, payload.serialized_output);
   showTab("plan");
 }
 

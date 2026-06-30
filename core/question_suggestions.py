@@ -1,15 +1,8 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from typing import Any
 
-
-@dataclass(frozen=True)
-class SuggestedQuestion:
-    question: str
-    rationale: str
-    question_type: str
-    columns: list[str]
+from contracts.briefing import SuggestedQuestion
 
 
 def _columns_by_role(metadata: dict[str, Any], role: str) -> list[dict[str, Any]]:
@@ -63,6 +56,8 @@ def suggest_questions(metadata: dict[str, Any], limit: int = 3) -> list[Suggeste
                 rationale=f"'{numeric_column}' is a numeric column, so a total is a useful first metric.",
                 question_type="analysis",
                 columns=[numeric_column],
+                priority=1,
+                expected_visualization="kpi",
             )
         )
 
@@ -71,8 +66,10 @@ def suggest_questions(metadata: dict[str, Any], limit: int = 3) -> list[Suggeste
             SuggestedQuestion(
                 question=f"Count by {group_column}",
                 rationale=f"'{group_column}' can segment the dataset into groups.",
-                question_type="analysis",
+                question_type="visualization",
                 columns=[group_column],
+                priority=1,
+                expected_visualization="bar",
             )
         )
 
@@ -83,6 +80,8 @@ def suggest_questions(metadata: dict[str, Any], limit: int = 3) -> list[Suggeste
                 rationale=f"'{numeric_column}' is numeric, so the average gives a quick baseline.",
                 question_type="analysis",
                 columns=[numeric_column],
+                priority=2,
+                expected_visualization="kpi",
             )
         )
 
@@ -92,6 +91,8 @@ def suggest_questions(metadata: dict[str, Any], limit: int = 3) -> list[Suggeste
             rationale="Row count is a simple sanity check after upload.",
             question_type="summary",
             columns=[],
+            priority=3,
+            expected_visualization="kpi",
         )
     )
 

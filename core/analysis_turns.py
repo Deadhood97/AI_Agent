@@ -2,10 +2,11 @@ from __future__ import annotations
 
 from typing import Any
 
-from contracts import ConversationTurn, ResolvedIntent
+from contracts import ChartPayload, ConversationTurn, ResolvedIntent
 from contracts.analysis import AnalysisExecutionResult
 from core.answers import format_analysis_answer
 from core.artifacts import ArtifactStore
+from core.charting import recommend_chart_payload
 from core.dataset_sessions import DatasetSessionService
 from core.execution import execute_dataframe_code
 from core.langsmith_tracing import (
@@ -109,6 +110,20 @@ class AnalysisTurnService:
                 assistant_answer = format_analysis_answer(execution_result)
                 end_langsmith_span(answer_span, {"answer": assistant_answer})
 
+            chart_payload: ChartPayload | None = recommend_chart_payload(
+                execution_result.output_key,
+                execution_result.serialized_output,
+                intent,
+            )
+            if chart_payload is not None:
+                self.artifact_store.write_json("charts", chart_payload.chart_id, chart_payload.model_dump())
+                append_trace_event(
+                    trace,
+                    "recommend_chart_payload",
+                    "succeeded",
+                    {"chart_id": chart_payload.chart_id, "chart_type": chart_payload.chart_type},
+                )
+
             turn = ConversationTurn.model_validate(
                 {
                     "turn_id": new_turn_id(),
@@ -118,6 +133,7 @@ class AnalysisTurnService:
                     "generated_code": code,
                     "analysis_plan": analysis_plan,
                     "execution_result": execution_result.model_dump(),
+                    "chart_payload": chart_payload.model_dump() if chart_payload else None,
                     "assistant_answer": assistant_answer,
                     "trace": trace,
                     "created_at": utc_now_iso(),

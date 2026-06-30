@@ -8,6 +8,7 @@ from unittest.mock import patch
 import pandas as pd
 
 from contracts import ConversationTurn, DatasetMetadata, ResolvedIntent
+from contracts.briefing import DatasetBriefing, SuggestedQuestion
 from contracts.analysis import AnalysisExecutionResult
 from core.artifacts import ArtifactStore, dataset_id_for
 from core.answers import format_analysis_answer
@@ -232,10 +233,12 @@ class FoundationTests(unittest.TestCase):
         suggestions = suggest_questions(metadata)
 
         self.assertEqual(len(suggestions), 3)
+        self.assertIsInstance(suggestions[0], SuggestedQuestion)
         self.assertEqual(suggestions[0].question, "What is the total revenue?")
         self.assertEqual(suggestions[1].question, "Count by region")
         self.assertEqual(suggestions[2].question, "What is the average revenue?")
         self.assertEqual(suggestions[0].columns, ["revenue"])
+        self.assertEqual(suggestions[1].expected_visualization, "bar")
 
     def test_deterministic_planner_returns_explainable_plan_contract(self):
         df = pd.DataFrame({"region": ["East", "West"], "revenue": [10, 20]})
@@ -321,9 +324,27 @@ class FoundationTests(unittest.TestCase):
             session = load_session(tools.artifact_store, result.session_id)
             suggestions = tools.suggest_questions_for_session(result.session_id)
 
+            self.assertIsInstance(result.dataset_briefing, DatasetBriefing)
+            self.assertIn("sales.csv", result.dataset_briefing.summary)
+            self.assertEqual(session.dataset_briefing.key_metrics, ["revenue"])
             self.assertEqual(result.suggested_questions[0].question, "What is the total revenue?")
             self.assertEqual(session.suggested_questions[0]["question"], "What is the total revenue?")
             self.assertEqual(suggestions[1].question, "Count by region")
+
+    def test_dataset_tools_attaches_chart_payload_for_grouped_result(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            tools = DatasetTools(ArtifactStore(Path(temp_dir)))
+            result = tools.ingest_csv_bytes(
+                b"region,revenue\nEast,10\nWest,20\nEast,5\n",
+                "sales.csv",
+            )
+            turn = tools.run_planned_turn(result.session_id, "Count by region")
+
+            self.assertIsNotNone(turn.chart_payload)
+            self.assertEqual(turn.chart_payload.chart_type, "bar")
+            self.assertEqual(turn.chart_payload.x, "region")
+            self.assertEqual(turn.chart_payload.y, "count")
+            self.assertTrue((Path(temp_dir) / "charts" / f"{turn.chart_payload.chart_id}.json").exists())
 
     def test_cli_can_show_suggestions_without_question(self):
         with tempfile.TemporaryDirectory() as temp_dir:
