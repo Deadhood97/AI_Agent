@@ -1,0 +1,7 @@
+pandas
+numpy
+pydantic
+python-dotenv
+tabulate
+pytest
+kaggle

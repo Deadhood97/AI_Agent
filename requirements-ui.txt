@@ -1,0 +1,2 @@
+# Phase 4 web UI currently uses Python's standard library plus requirements.txt.
+# Keep this file as the placeholder for future UI-specific dependencies.

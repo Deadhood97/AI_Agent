@@ -1,0 +1,2 @@
+"""Replaceable user-interface layer."""
+

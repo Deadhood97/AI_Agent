@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Dataset Analyst</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="left-rail" aria-label="Workspace navigation">
+        <div class="brand-mark">DA</div>
+        <button class="rail-action active" type="button" title="New thread" aria-label="New thread">+</button>
+        <nav class="rail-nav" aria-label="Primary">
+          <button class="rail-item active" type="button">
+            <span class="rail-icon">H</span>
+            <span>Home</span>
+          </button>
+          <button class="rail-item" type="button" disabled>
+            <span class="rail-icon">F</span>
+            <span>Files</span>
+          </button>
+          <button class="rail-item" type="button" disabled>
+            <span class="rail-icon">R</span>
+            <span>Runs</span>
+          </button>
+          <button class="rail-item" type="button" disabled>
+            <span class="rail-icon">T</span>
+            <span>Traces</span>
+          </button>
+        </nav>
+        <div class="rail-bottom">
+          <button class="rail-item" type="button" disabled>
+            <span class="rail-icon">S</span>
+            <span>Settings</span>
+          </button>
+        </div>
+      </aside>
+
+      <main class="workspace">
+        <header class="top-bar">
+          <div class="thread-title">
+            <span class="eyebrow">Conversational Dataset Analyst</span>
+            <h1 id="threadTitle">New Thread</h1>
+          </div>
+          <div class="top-actions" aria-label="Runtime status">
+            <span class="status-chip" id="datasetStatus">No dataset</span>
+            <span class="status-chip">Deterministic</span>
+            <span class="status-chip muted-chip">LangSmith local</span>
+          </div>
+        </header>
+
+        <section class="main-grid">
+          <section class="chat-workspace" aria-label="Analyst conversation">
+            <div class="chat-thread" id="chatThread" aria-live="polite">
+              <section class="empty-state" id="emptyState">
+                <p class="eyebrow">Start analysis</p>
+                <h2>What do you want to analyze today?</h2>
+                <p class="muted">Attach a CSV, ask a question, or upload first and use the suggested starters.</p>
+              </section>
+            </div>
+
+            <section class="starter-area" aria-label="Suggested starter prompts">
+              <div class="starter-heading">
+                <span>Starter prompts</span>
+                <span class="subtle">Top 3 after upload</span>
+              </div>
+              <div id="suggestions" class="suggestions"></div>
+            </section>
+
+            <form id="composerForm" class="composer">
+              <label class="attach-button" title="Attach CSV">
+                <span id="fileLabel">Attach CSV</span>
+                <input id="csvFile" name="csv_file" type="file" accept=".csv,text/csv" />
+              </label>
+              <input
+                id="questionInput"
+                type="text"
+                placeholder="Ask a question or upload data first..."
+                autocomplete="off"
+              />
+              <input
+                id="description"
+                name="description"
+                type="text"
+                placeholder="Dataset note"
+                autocomplete="off"
+              />
+              <button id="sendButton" type="submit">Send</button>
+            </form>
+          </section>
+
+          <aside class="inspector-panel" aria-label="Developer inspector">
+            <div class="inspector-header">
+              <div>
+                <h2>Inspector</h2>
+                <p class="muted" id="inspectorState">No active dataset</p>
+              </div>
+              <span class="status-dot" id="runStatus">Ready</span>
+            </div>
+
+            <section class="dataset-summary" aria-label="Dataset summary">
+              <div class="metric">
+                <span>Rows</span>
+                <strong id="rowCount">-</strong>
+              </div>
+              <div class="metric">
+                <span>Columns</span>
+                <strong id="columnCount">-</strong>
+              </div>
+              <div class="metric wide">
+                <span>Session</span>
+                <strong id="sessionId">-</strong>
+              </div>
+            </section>
+
+            <div class="tabs" role="tablist" aria-label="Inspector tabs">
+              <button class="tab-button active" type="button" role="tab" aria-selected="true" data-tab="data">
+                Data
+              </button>
+              <button class="tab-button" type="button" role="tab" aria-selected="false" data-tab="plan">Plan</button>
+              <button class="tab-button" type="button" role="tab" aria-selected="false" data-tab="trace">Trace</button>
+            </div>
+
+            <section class="tab-panel active" id="tab-data" role="tabpanel">
+              <div class="panel-heading">
+                <h3>Preview</h3>
+                <span id="previewMeta" class="subtle">First rows</span>
+              </div>
+              <div class="table-wrap">
+                <table id="previewTable"></table>
+              </div>
+            </section>
+
+            <section class="tab-panel" id="tab-plan" role="tabpanel" hidden>
+              <div class="panel-heading">
+                <h3>Analysis plan</h3>
+                <span class="subtle">Cause</span>
+              </div>
+              <pre id="planBody">Run a question to inspect the selected plan.</pre>
+            </section>
+
+            <section class="tab-panel" id="tab-trace" role="tabpanel" hidden>
+              <div class="panel-heading">
+                <h3>Trace</h3>
+                <span class="subtle">Effect</span>
+              </div>
+              <pre id="traceBody">Run a question to inspect local trace events.</pre>
+            </section>
+          </aside>
+        </section>
+      </main>
+    </div>
+    <script src="/app.js"></script>
+  </body>
+</html>
