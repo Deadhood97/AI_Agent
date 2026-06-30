@@ -484,7 +484,7 @@ h3 {
 
 .composer {
   display: grid;
-  grid-template-columns: 150px minmax(220px, 1fr) minmax(150px, 220px) 86px;
+  grid-template-columns: minmax(280px, 1.1fr) minmax(150px, 220px) minmax(320px, 1.4fr) 86px;
   gap: 10px;
   border-top: 1px solid var(--border);
   padding: 14px 16px;
@@ -493,6 +493,7 @@ h3 {
 .composer input {
   min-height: 44px;
   padding: 0 12px;
+  text-overflow: ellipsis;
 }
 
 .attach-button {
