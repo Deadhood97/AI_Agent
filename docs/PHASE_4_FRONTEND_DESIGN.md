@@ -5,7 +5,7 @@ This document is the design target for the first serious web UI of the Conversat
 The product direction is:
 
 ```text
-Upload or attach data -> chat with an analyst -> inspect answer, plan, trace, and data context
+Paste Kaggle dataset link -> chat with an analyst -> inspect answer, output, plan, trace, and data context
 ```
 
 The frontend should feel like a focused analyst workspace, not a set of scattered dashboard cards.
@@ -26,7 +26,7 @@ Julius has a strong "start here" experience:
 
 For our app, the equivalent should be:
 
-- Upload CSV or attach data inside the main composer area.
+- Paste a Kaggle dataset link or `owner/dataset-slug` reference inside the main composer area.
 - Show the top 3 suggested questions as starter prompts, not as unrelated cards.
 - Keep dataset/session controls nearby, but visually secondary.
 
@@ -86,7 +86,7 @@ Use a restrained palette with tested contrast. Avoid one-note palettes, low-cont
 | Files    |                                                               |
 | Runs     |    Empty state: "What do you want to analyze today?"           |
 | Traces   |                                                               |
-| Settings |    Composer: attach CSV + ask question + send                  |
+| Settings |    Composer: Kaggle link + optional file + question + send      |
 |          |                                                               |
 |          |    Starter prompts: top 3 suggested questions                  |
 |          |                                                               |
@@ -111,7 +111,7 @@ Content:
 - App title or thread title.
 - Prompt: `What do you want to analyze today?`
 - Large composer with:
-  - attach CSV
+  - Kaggle dataset link/reference
   - optional dataset note
   - question input
   - send/analyze button
@@ -119,7 +119,7 @@ Content:
 
 Current starter cards we can support soon:
 
-- Upload CSV
+- Import Kaggle dataset
 - Ask top 3 questions
 - View dataset preview
 - Inspect plan and trace
@@ -302,8 +302,8 @@ Contrast targets:
 
 1. User opens app.
 2. Main workspace asks: `What do you want to analyze today?`
-3. User attaches CSV and optionally asks a question.
-4. Backend ingests CSV.
+3. User pastes a Kaggle dataset link/reference and optionally asks a question.
+4. Backend imports the selected Kaggle CSV.
 5. UI shows analyst message with dataset summary.
 6. UI shows top 3 suggested prompts.
 
@@ -338,17 +338,17 @@ Acceptance:
 - Chat workspace is visually primary.
 - Dataset context is clearly secondary.
 
-### Step 2: Composer-Centered Upload
+### Step 2: Composer-Centered Kaggle Import
 
-- Move CSV upload into the main composer/empty state.
+- Move Kaggle dataset import into the main composer/empty state.
 - Keep optional dataset note.
-- After upload, show dataset summary as assistant message.
+- After import, show dataset summary as assistant message.
 
 Acceptance:
 
-- User can start with upload only.
-- User can start with upload plus question later.
-- No separate dominant upload card.
+- User can start with Kaggle import only.
+- User can start with Kaggle import plus question.
+- No separate dominant import card.
 
 ### Step 3: Inspector Tabs
 

@@ -7,6 +7,7 @@ import unittest
 from pathlib import Path
 from urllib.error import HTTPError
 from urllib import request
+from unittest.mock import patch
 
 from ui.web_app import build_server
 
@@ -39,6 +40,7 @@ class WebAppTests(unittest.TestCase):
                 html = response.read().decode("utf-8")
                 self.assertIn("Dataset Analyst", html)
                 self.assertIn("composerForm", html)
+                self.assertIn("kaggleRef", html)
                 self.assertIn("left-rail", html)
                 self.assertIn("tab-plan", html)
             finally:
@@ -90,6 +92,36 @@ class WebAppTests(unittest.TestCase):
                 server.shutdown()
                 server.server_close()
                 thread.join(timeout=5)
+
+    def test_web_app_kaggle_import_flow(self):
+        fake_import = {
+            "dataset_ref": "owner/dataset",
+            "selected_file": "sales.csv",
+            "filename": "kaggle_owner_dataset_sales.csv",
+            "raw_bytes": b"region,revenue\nNorth,10\nSouth,20\n",
+            "description": "Kaggle dataset: owner/dataset",
+            "files": [{"name": "sales.csv", "size": 100}],
+            "download_path": Path("sales.csv"),
+        }
+        with tempfile.TemporaryDirectory() as temp_dir:
+            with patch("core.dataset_tools.fetch_kaggle_dataset", return_value=fake_import):
+                server, thread, base_url = self._start_server(Path(temp_dir))
+                try:
+                    payload = self._post_json(
+                        f"{base_url}/api/kaggle",
+                        {
+                            "dataset_ref": "https://www.kaggle.com/datasets/owner/dataset",
+                            "requested_file": "sales.csv",
+                        },
+                    )
+
+                    self.assertEqual(payload["row_count"], 2)
+                    self.assertEqual(payload["filename"], "kaggle_owner_dataset_sales.csv")
+                    self.assertEqual(payload["suggested_questions"][0]["question"], "What is the total revenue?")
+                finally:
+                    server.shutdown()
+                    server.server_close()
+                    thread.join(timeout=5)
 
     def test_web_app_planning_failure_returns_examples(self):
         with tempfile.TemporaryDirectory() as temp_dir:

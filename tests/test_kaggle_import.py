@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import tempfile
 import unittest
 import zipfile
@@ -165,6 +166,22 @@ class KaggleImportTests(unittest.TestCase):
     def test_invalid_kaggle_dataset_ref_raises(self):
         with self.assertRaises(ValueError):
             kaggle_import.normalize_kaggle_dataset_ref("not-enough")
+
+    def test_kaggle_api_token_json_populates_standard_env_vars(self):
+        token = json.dumps({"username": "demo-user", "key": "demo-key"})
+
+        with patch.dict(os.environ, {"KAGGLE_API_TOKEN": token}, clear=True):
+            kaggle_import._apply_kaggle_api_token_env()
+
+            self.assertEqual(os.environ["KAGGLE_USERNAME"], "demo-user")
+            self.assertEqual(os.environ["KAGGLE_KEY"], "demo-key")
+
+    def test_kaggle_api_token_colon_format_populates_standard_env_vars(self):
+        with patch.dict(os.environ, {"KAGGLE_API_TOKEN": "demo-user:demo-key"}, clear=True):
+            kaggle_import._apply_kaggle_api_token_env()
+
+            self.assertEqual(os.environ["KAGGLE_USERNAME"], "demo-user")
+            self.assertEqual(os.environ["KAGGLE_KEY"], "demo-key")
 
     def test_dataset_tools_can_ingest_kaggle_dataset(self):
         fake_import = {

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import shutil
 import tempfile
 import zipfile
@@ -38,6 +39,7 @@ def kaggle_download_folder(dataset_ref: str, download_root: Path | None = None) 
 
 def kaggle_api() -> Any:
     load_dotenv()
+    _apply_kaggle_api_token_env()
     try:
         from kaggle.api.kaggle_api_extended import KaggleApi
     except ImportError as exc:
@@ -56,6 +58,31 @@ def kaggle_api() -> Any:
             "`KAGGLE_USERNAME` and `KAGGLE_KEY` in `.env`."
         ) from exc
     return api
+
+
+def _apply_kaggle_api_token_env() -> None:
+    if os.environ.get("KAGGLE_USERNAME") and os.environ.get("KAGGLE_KEY"):
+        return
+
+    token = os.environ.get("KAGGLE_API_TOKEN", "").strip()
+    if not token:
+        return
+
+    try:
+        payload = json.loads(token)
+    except json.JSONDecodeError:
+        parts = token.split(":", 1)
+        if len(parts) == 2:
+            os.environ.setdefault("KAGGLE_USERNAME", parts[0].strip())
+            os.environ.setdefault("KAGGLE_KEY", parts[1].strip())
+        return
+
+    if isinstance(payload, dict):
+        username = str(payload.get("username") or "").strip()
+        key = str(payload.get("key") or "").strip()
+        if username and key:
+            os.environ.setdefault("KAGGLE_USERNAME", username)
+            os.environ.setdefault("KAGGLE_KEY", key)
 
 
 def list_kaggle_files(api: Any, dataset_ref: str) -> list[dict[str, Any]]:

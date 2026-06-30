@@ -46,6 +46,22 @@ def _supported_question_examples() -> list[str]:
     ]
 
 
+def _ingestion_response_payload(tools: DatasetTools, result) -> dict:
+    preview = tools.preview_for_session(result.session_id, rows=8)
+    metadata = result.metadata.model_dump()
+    return {
+        "dataset_id": result.dataset_id,
+        "session_id": result.session_id,
+        "filename": metadata.get("source_file"),
+        "row_count": metadata.get("row_count"),
+        "column_count": metadata.get("column_count"),
+        "quality": metadata.get("quality", {}),
+        "columns": _column_summary(metadata),
+        "suggested_questions": [suggestion.__dict__ for suggestion in result.suggested_questions],
+        "preview": preview.get("preview_rows", []),
+    }
+
+
 def _parse_multipart_form(content_type: str, body: bytes) -> dict[str, dict[str, bytes | str]]:
     message = BytesParser(policy=policy.default).parsebytes(
         b"Content-Type: " + content_type.encode("utf-8") + b"\r\nMIME-Version: 1.0\r\n\r\n" + body
@@ -93,6 +109,8 @@ class AnalystWebHandler(BaseHTTPRequestHandler):
         try:
             if self.path == "/api/upload":
                 status, payload = self._handle_upload()
+            elif self.path == "/api/kaggle":
+                status, payload = self._handle_kaggle_import()
             elif self.path == "/api/ask":
                 status, payload = self._handle_ask()
             else:
@@ -123,21 +141,26 @@ class AnalystWebHandler(BaseHTTPRequestHandler):
             Path(filename).name,
             dataset_description=description,
         )
-        preview = self.tools.preview_for_session(result.session_id, rows=8)
-        metadata = result.metadata.model_dump()
-        return _json_bytes(
-            {
-                "dataset_id": result.dataset_id,
-                "session_id": result.session_id,
-                "filename": metadata.get("filename"),
-                "row_count": metadata.get("row_count"),
-                "column_count": metadata.get("column_count"),
-                "quality": metadata.get("quality", {}),
-                "columns": _column_summary(metadata),
-                "suggested_questions": [suggestion.__dict__ for suggestion in result.suggested_questions],
-                "preview": preview.get("preview_rows", []),
-            }
+        return _json_bytes(_ingestion_response_payload(self.tools, result))
+
+    def _handle_kaggle_import(self) -> tuple[int, bytes]:
+        content_length = int(self.headers.get("Content-Length", "0"))
+        payload = json.loads(self.rfile.read(content_length).decode("utf-8") or "{}")
+        dataset_ref = str(payload.get("dataset_ref") or "").strip()
+        requested_file = str(payload.get("requested_file") or "").strip()
+        description = str(payload.get("description") or "").strip()
+        if not dataset_ref:
+            return _json_bytes({"error": "Paste a Kaggle dataset link or owner/dataset reference first."}, status=400)
+
+        result = self.tools.ingest_kaggle_dataset(
+            dataset_ref=dataset_ref,
+            requested_file=requested_file,
+            dataset_description=description,
         )
+        response_payload = _ingestion_response_payload(self.tools, result)
+        response_payload["kaggle_ref"] = dataset_ref
+        response_payload["requested_file"] = requested_file
+        return _json_bytes(response_payload)
 
     def _handle_ask(self) -> tuple[int, bytes]:
         content_length = int(self.headers.get("Content-Length", "0"))

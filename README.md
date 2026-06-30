@@ -63,7 +63,7 @@ With `LANGSMITH_TRACING=true` and `LANGSMITH_API_KEY` set, the CLI smoke run als
 .\.venv\Scripts\python.exe -m ui.web_app --host 127.0.0.1 --port 8765
 ```
 
-Open http://127.0.0.1:8765 in your browser. The UI is chat-first and desktop-first: upload a CSV, use suggested starter prompts, ask follow-up questions, and inspect dataset context plus plan/trace beside the conversation.
+Open http://127.0.0.1:8765 in your browser. The UI is chat-first and desktop-first: paste a Kaggle dataset link or `owner/dataset-slug` reference, use suggested starter prompts, ask follow-up questions, and inspect dataset context plus plan/trace/output beside the conversation.
 
 ## LangSmith Evaluation Smoke
 
@@ -75,7 +75,7 @@ Open http://127.0.0.1:8765 in your browser. The UI is chat-first and desktop-fir
 
 Phase 4 is the first user-friendly, chat-first frontend over the deterministic backend:
 
-- desktop-first CSV upload workflow
+- desktop-first Kaggle dataset import workflow
 - conversational analyst thread
 - top 3 suggested starter prompts
 - custom user question input in the chat flow

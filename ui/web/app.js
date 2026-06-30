@@ -7,9 +7,8 @@ const state = {
 
 const els = {
   composerForm: document.querySelector("#composerForm"),
-  csvFile: document.querySelector("#csvFile"),
-  fileLabel: document.querySelector("#fileLabel"),
-  description: document.querySelector("#description"),
+  kaggleRef: document.querySelector("#kaggleRef"),
+  kaggleFile: document.querySelector("#kaggleFile"),
   questionInput: document.querySelector("#questionInput"),
   sendButton: document.querySelector("#sendButton"),
   chatThread: document.querySelector("#chatThread"),
@@ -64,8 +63,8 @@ function setBusy(isBusy) {
     button.disabled = isBusy && !button.classList.contains("tab-button");
   });
   els.questionInput.disabled = isBusy;
-  els.description.disabled = isBusy;
-  els.csvFile.disabled = isBusy;
+  els.kaggleRef.disabled = isBusy;
+  els.kaggleFile.disabled = isBusy;
 }
 
 function showTab(tabName) {
@@ -275,11 +274,17 @@ async function parseJsonResponse(response) {
   return payload;
 }
 
-async function uploadDataset(file) {
-  const formData = new FormData();
-  formData.append("csv_file", file);
-  formData.append("description", els.description.value);
-  return parseJsonResponse(await fetch("/api/upload", { method: "POST", body: formData }));
+async function importKaggleDataset(datasetRef, requestedFile) {
+  return parseJsonResponse(
+    await fetch("/api/kaggle", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        dataset_ref: datasetRef,
+        requested_file: requestedFile,
+      }),
+    }),
+  );
 }
 
 async function askQuestion(question) {
@@ -292,7 +297,7 @@ async function askQuestion(question) {
   );
 }
 
-function applyUploadPayload(payload, fileName) {
+function applyUploadPayload(payload, sourceLabel) {
   state.sessionId = payload.session_id;
   state.suggestions = payload.suggested_questions || [];
   state.previewRows = payload.preview || [];
@@ -310,7 +315,7 @@ function applyUploadPayload(payload, fileName) {
   showTab("data");
 
   clearThreadWithMessage(
-    `Dataset loaded: ${payload.filename || fileName}\n${Number(payload.row_count).toLocaleString()} rows, ${Number(
+    `Dataset loaded: ${payload.filename || sourceLabel}\n${Number(payload.row_count).toLocaleString()} rows, ${Number(
       payload.column_count,
     ).toLocaleString()} columns.\nPick a starter prompt or ask your own follow-up.`,
   );
@@ -376,22 +381,18 @@ els.tabButtons.forEach((button) => {
   button.addEventListener("click", () => showTab(button.dataset.tab));
 });
 
-els.csvFile.addEventListener("change", () => {
-  const file = els.csvFile.files[0];
-  els.fileLabel.textContent = file ? file.name : "Attach CSV";
-});
-
 els.composerForm.addEventListener("submit", async (event) => {
   event.preventDefault();
-  const file = els.csvFile.files[0];
+  const kaggleRef = els.kaggleRef.value.trim();
+  const kaggleFile = els.kaggleFile.value.trim();
   const question = els.questionInput.value.trim();
 
-  if (!file && !state.datasetLoaded) {
-    addMessage("assistant", "Attach a CSV first, then I can analyze it.");
+  if (!kaggleRef && !state.datasetLoaded) {
+    addMessage("assistant", "Paste a Kaggle dataset link or owner/dataset reference first, then I can analyze it.");
     setStatus("Needs data", "warn");
     return;
   }
-  if (!question && state.datasetLoaded && !file) {
+  if (!question && state.datasetLoaded && !kaggleRef) {
     addMessage("assistant", "Ask a question or choose one of the starter prompts.");
     setStatus("Needs prompt", "warn");
     return;
@@ -402,13 +403,13 @@ els.composerForm.addEventListener("submit", async (event) => {
   let pendingBubble = null;
 
   try {
-    if (file) {
-      setDatasetStatus("Uploading", "warn");
-      clearThreadWithMessage("Reading the dataset and preparing starter prompts...");
-      const uploadPayload = await uploadDataset(file);
-      applyUploadPayload(uploadPayload, file.name);
-      els.csvFile.value = "";
-      els.fileLabel.textContent = "Attach CSV";
+    if (kaggleRef) {
+      setDatasetStatus("Importing", "warn");
+      clearThreadWithMessage("Importing the Kaggle dataset and preparing starter prompts...");
+      const uploadPayload = await importKaggleDataset(kaggleRef, kaggleFile);
+      applyUploadPayload(uploadPayload, kaggleRef);
+      els.kaggleRef.value = "";
+      els.kaggleFile.value = "";
     }
 
     if (question) {

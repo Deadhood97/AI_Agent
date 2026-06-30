@@ -18,6 +18,12 @@ kaggle auth login
 Or set credentials in `.env`:
 
 ```text
+KAGGLE_API_TOKEN={"username":"your_kaggle_username","key":"your_kaggle_api_key"}
+```
+
+You can also use the standard Kaggle environment variables:
+
+```text
 KAGGLE_USERNAME=your_kaggle_username
 KAGGLE_KEY=your_kaggle_api_key
 ```

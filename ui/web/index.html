@@ -80,7 +80,7 @@
               <section class="empty-state" id="emptyState">
                 <p class="eyebrow">Start analysis</p>
                 <h2>What do you want to analyze today?</h2>
-                <p class="muted">Attach a CSV, ask a question, or upload first and use the suggested starters.</p>
+                <p class="muted">Paste a Kaggle dataset link, ask a question, or import first and use the suggested starters.</p>
               </section>
             </div>
 
@@ -93,22 +93,23 @@
             </section>
 
             <form id="composerForm" class="composer">
-              <label class="attach-button" title="Attach CSV">
-                <span class="icon-mask" style="--icon: url('/assets/icons/paperclip.svg')" aria-hidden="true"></span>
-                <span id="fileLabel">Attach CSV</span>
-                <input id="csvFile" name="csv_file" type="file" accept=".csv,text/csv" />
-              </label>
               <input
-                id="questionInput"
+                id="kaggleRef"
+                name="kaggle_ref"
                 type="text"
-                placeholder="Ask a question or upload data first..."
+                placeholder="Kaggle link or owner/dataset"
                 autocomplete="off"
               />
               <input
-                id="description"
-                name="description"
+                id="kaggleFile"
                 type="text"
-                placeholder="Dataset note"
+                placeholder="CSV file inside Kaggle dataset"
+                autocomplete="off"
+              />
+              <input
+                id="questionInput"
+                type="text"
+                placeholder="Ask a question or import data first..."
                 autocomplete="off"
               />
               <button id="sendButton" type="submit">
