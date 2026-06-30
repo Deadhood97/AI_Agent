@@ -352,6 +352,70 @@ h3 {
   color: #dffcf8;
 }
 
+.result-artifact {
+  display: grid;
+  gap: 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-soft);
+  padding: 12px;
+}
+
+.result-artifact-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--text);
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.result-table-wrap {
+  max-height: 260px;
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #111419;
+}
+
+.result-table-wrap table {
+  min-width: 420px;
+}
+
+.scalar-output {
+  color: var(--accent);
+  font-size: 1.35rem;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.mapping-output {
+  display: grid;
+  grid-template-columns: minmax(110px, auto) minmax(0, 1fr);
+  gap: 8px 12px;
+  margin: 0;
+}
+
+.mapping-output dt,
+.mapping-output dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.mapping-output dt {
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.mapping-output dd {
+  color: var(--text);
+}
+
+.artifact-note {
+  font-size: 0.82rem;
+}
+
 .starter-area {
   border-top: 1px solid var(--border);
   padding: 14px 16px;
@@ -489,7 +553,7 @@ h3 {
 
 .tabs {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 6px;
   border: 1px solid var(--border);
   border-radius: 8px;

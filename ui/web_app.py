@@ -37,6 +37,15 @@ def _column_summary(metadata: dict) -> list[dict]:
     return summary
 
 
+def _supported_question_examples() -> list[str]:
+    return [
+        "How many rows are there?",
+        "What is the total revenue?",
+        "What is the average revenue?",
+        "Count by region",
+    ]
+
+
 def _parse_multipart_form(content_type: str, body: bytes) -> dict[str, dict[str, bytes | str]]:
     message = BytesParser(policy=policy.default).parsebytes(
         b"Content-Type: " + content_type.encode("utf-8") + b"\r\nMIME-Version: 1.0\r\n\r\n" + body
@@ -148,6 +157,7 @@ class AnalystWebHandler(BaseHTTPRequestHandler):
                 {
                     "error": str(exc),
                     "error_type": type(exc).__name__,
+                    "supported_questions": _supported_question_examples(),
                     "attempts": [attempt.model_dump(exclude={"plan"}) for attempt in exc.result.attempts],
                 },
                 status=422,
@@ -160,6 +170,11 @@ class AnalystWebHandler(BaseHTTPRequestHandler):
                 "analysis_plan": turn.analysis_plan.model_dump() if turn.analysis_plan else None,
                 "trace": turn.trace,
                 "output_key": turn.execution_result.output_key,
+                "serialized_output": (
+                    turn.execution_result.serialized_output.model_dump()
+                    if turn.execution_result.serialized_output
+                    else None
+                ),
             }
         )
 

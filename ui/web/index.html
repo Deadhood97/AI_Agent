@@ -120,6 +120,9 @@
               </button>
               <button class="tab-button" type="button" role="tab" aria-selected="false" data-tab="plan">Plan</button>
               <button class="tab-button" type="button" role="tab" aria-selected="false" data-tab="trace">Trace</button>
+              <button class="tab-button" type="button" role="tab" aria-selected="false" data-tab="output">
+                Output
+              </button>
             </div>
 
             <section class="tab-panel active" id="tab-data" role="tabpanel">
@@ -146,6 +149,14 @@
                 <span class="subtle">Effect</span>
               </div>
               <pre id="traceBody">Run a question to inspect local trace events.</pre>
+            </section>
+
+            <section class="tab-panel" id="tab-output" role="tabpanel" hidden>
+              <div class="panel-heading">
+                <h3>Output</h3>
+                <span class="subtle">Serialized result</span>
+              </div>
+              <pre id="outputBody">Run a question to inspect the computed output.</pre>
             </section>
           </aside>
         </section>

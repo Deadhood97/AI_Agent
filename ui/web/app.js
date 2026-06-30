@@ -26,6 +26,7 @@ const els = {
   previewMeta: document.querySelector("#previewMeta"),
   planBody: document.querySelector("#planBody"),
   traceBody: document.querySelector("#traceBody"),
+  outputBody: document.querySelector("#outputBody"),
   tabButtons: document.querySelectorAll(".tab-button"),
   tabPanels: document.querySelectorAll(".tab-panel"),
 };
@@ -102,6 +103,45 @@ function addMessage(role, text, meta = "") {
   return bubble;
 }
 
+function renderRowsTable(rows, className = "") {
+  const tableWrap = document.createElement("div");
+  tableWrap.className = `result-table-wrap ${className}`.trim();
+  const table = document.createElement("table");
+
+  if (!rows || !rows.length) {
+    table.innerHTML = '<tbody><tr><td class="preview-empty">No rows returned.</td></tr></tbody>';
+    tableWrap.appendChild(table);
+    return tableWrap;
+  }
+
+  const columns = Object.keys(rows[0]);
+  const thead = document.createElement("thead");
+  const headerRow = document.createElement("tr");
+  columns.forEach((column) => {
+    const th = document.createElement("th");
+    th.textContent = column;
+    headerRow.appendChild(th);
+  });
+  thead.appendChild(headerRow);
+
+  const tbody = document.createElement("tbody");
+  rows.forEach((row) => {
+    const tr = document.createElement("tr");
+    columns.forEach((column) => {
+      const td = document.createElement("td");
+      const value = row[column];
+      td.textContent = value === null || value === undefined ? "" : String(value);
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+
+  table.appendChild(thead);
+  table.appendChild(tbody);
+  tableWrap.appendChild(table);
+  return tableWrap;
+}
+
 function clearThreadWithMessage(text) {
   els.chatThread.innerHTML = "";
   els.emptyState = null;
@@ -165,6 +205,56 @@ function renderPreview(rows) {
   els.previewTable.appendChild(tbody);
 }
 
+function appendOutputArtifact(bubble, output) {
+  if (!output || !bubble.parentElement) {
+    return;
+  }
+
+  const artifact = document.createElement("section");
+  artifact.className = "result-artifact";
+
+  const header = document.createElement("div");
+  header.className = "result-artifact-header";
+  const title = document.createElement("span");
+  title.textContent = output.kind === "table" ? "Result table" : "Computed output";
+  const meta = document.createElement("span");
+  meta.className = "subtle";
+  meta.textContent = output.row_count !== null && output.row_count !== undefined ? `${output.row_count} rows` : output.type;
+  header.appendChild(title);
+  header.appendChild(meta);
+  artifact.appendChild(header);
+
+  if (output.kind === "table") {
+    artifact.appendChild(renderRowsTable(output.rows || [], "artifact-table"));
+    if (output.truncated) {
+      const note = document.createElement("p");
+      note.className = "subtle artifact-note";
+      note.textContent = "Output was truncated for display.";
+      artifact.appendChild(note);
+    }
+  } else if (output.kind === "mapping") {
+    const list = document.createElement("dl");
+    list.className = "mapping-output";
+    Object.entries(output.value || {}).forEach(([key, value]) => {
+      const dt = document.createElement("dt");
+      dt.textContent = key;
+      const dd = document.createElement("dd");
+      dd.textContent = value === null || value === undefined ? "" : String(value);
+      list.appendChild(dt);
+      list.appendChild(dd);
+    });
+    artifact.appendChild(list);
+  } else {
+    const value = document.createElement("strong");
+    value.className = "scalar-output";
+    value.textContent = output.value === null || output.value === undefined ? "" : String(output.value);
+    artifact.appendChild(value);
+  }
+
+  bubble.parentElement.appendChild(artifact);
+  els.chatThread.scrollTop = els.chatThread.scrollHeight;
+}
+
 async function parseJsonResponse(response) {
   const payload = await response.json();
   if (!response.ok) {
@@ -219,6 +309,7 @@ function applyUploadPayload(payload, fileName) {
 function applyAnswerPayload(payload, pendingBubble) {
   pendingBubble.textContent = payload.answer || "No answer returned.";
   els.planBody.textContent = JSON.stringify(payload.analysis_plan || {}, null, 2);
+  els.outputBody.textContent = JSON.stringify(payload.serialized_output || {}, null, 2);
   els.traceBody.textContent = JSON.stringify(
     {
       trace: payload.trace || [],
@@ -229,12 +320,18 @@ function applyAnswerPayload(payload, pendingBubble) {
     null,
     2,
   );
+  appendOutputArtifact(pendingBubble, payload.serialized_output);
   showTab("plan");
 }
 
 function applyErrorPayload(error, pendingBubble = null) {
   const payload = error.payload || {};
-  const message = error.message || "Request failed.";
+  const supportedQuestions = payload.supported_questions || [];
+  const message = payload.attempts
+    ? `I could not plan that with the deterministic planner yet.\n\nTry one of these:\n${supportedQuestions
+        .map((question) => `- ${question}`)
+        .join("\n")}`
+    : error.message || "Request failed.";
   if (pendingBubble) {
     pendingBubble.textContent = message;
   } else {
@@ -243,10 +340,19 @@ function applyErrorPayload(error, pendingBubble = null) {
 
   if (payload.attempts) {
     els.planBody.textContent = JSON.stringify({ attempts: payload.attempts }, null, 2);
+    els.outputBody.textContent = JSON.stringify(
+      {
+        error: payload.error,
+        supported_questions: supportedQuestions,
+      },
+      null,
+      2,
+    );
     els.traceBody.textContent = JSON.stringify(
       {
         error: payload.error,
         error_type: payload.error_type,
+        supported_questions: supportedQuestions,
         attempts: payload.attempts,
       },
       null,
