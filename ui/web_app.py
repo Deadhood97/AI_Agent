@@ -59,6 +59,8 @@ def _ingestion_response_payload(tools: DatasetTools, result) -> dict:
         "columns": _column_summary(metadata),
         "suggested_questions": [suggestion.model_dump() for suggestion in result.suggested_questions],
         "dataset_briefing": result.dataset_briefing.model_dump(),
+        "briefing_source": result.dataset_briefing.generator,
+        "briefing_model": result.dataset_briefing.model,
         "preview": preview.get("preview_rows", []),
     }
 

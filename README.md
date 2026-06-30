@@ -43,6 +43,17 @@ Optional LangChain/LangGraph learning dependencies, for later labs:
 .\.venv\Scripts\python.exe -m pip install -r requirements-agent-frameworks.txt
 ```
 
+Optional OpenAI-assisted dataset briefings:
+
+```powershell
+# in .env
+OPENAI_API_KEY=...
+OPENAI_BRIEFING_ENABLED=true
+OPENAI_BRIEFING_MODEL=gpt-4.1-mini
+```
+
+When disabled or unavailable, imports fall back to deterministic briefing and suggestions.
+
 ## Test
 
 ```powershell

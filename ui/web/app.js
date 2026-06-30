@@ -234,6 +234,9 @@ function formatDatasetBriefing(payload, sourceLabel) {
     const warning = briefing.quality_warnings[0];
     lines.push(`Quality note: ${warning.message}`);
   }
+  if (briefing.generator === "openai") {
+    lines.push(`Briefing: OpenAI-assisted${briefing.model ? ` (${briefing.model})` : ""}.`);
+  }
   lines.push("Pick a starter prompt or ask your own follow-up.");
   return lines.join("\n");
 }

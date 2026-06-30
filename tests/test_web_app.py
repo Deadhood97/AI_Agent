@@ -119,6 +119,7 @@ class WebAppTests(unittest.TestCase):
                     self.assertEqual(payload["row_count"], 2)
                     self.assertEqual(payload["filename"], "kaggle_owner_dataset_sales.csv")
                     self.assertIn("dataset_briefing", payload)
+                    self.assertEqual(payload["briefing_source"], "deterministic")
                     self.assertIn("kaggle_owner_dataset_sales.csv", payload["dataset_briefing"]["summary"])
                     self.assertEqual(payload["suggested_questions"][0]["question"], "What is the total revenue?")
                 finally:

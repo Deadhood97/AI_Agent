@@ -35,6 +35,8 @@ class DatasetBriefing(ContractModel):
     summary: str
     row_count: int
     column_count: int
+    generator: Literal["deterministic", "openai"] = "deterministic"
+    model: str | None = None
     likely_subject: str = ""
     key_metrics: list[str] = Field(default_factory=list)
     key_dimensions: list[str] = Field(default_factory=list)

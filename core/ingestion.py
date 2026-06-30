@@ -16,6 +16,7 @@ from core.langsmith_tracing import (
     summarize_suggestions_for_langsmith,
     summarize_trace_events_for_langsmith,
 )
+from core.llm_briefing import ai_briefing_enabled, build_openai_dataset_briefing
 from core.question_suggestions import SuggestedQuestion, suggest_questions
 from core.sessions import create_dataset_session
 from core.tracing import append_trace_event
@@ -76,9 +77,40 @@ class DatasetIngestionService:
             dataset_briefing = build_dataset_briefing(metadata.model_dump(), suggested_questions)
             append_trace_event(
                 trace,
+                "build_dataset_briefing",
+                "succeeded",
+                {"generator": dataset_briefing.generator, "question_count": len(dataset_briefing.suggested_questions)},
+            )
+            if ai_briefing_enabled():
+                try:
+                    dataset_briefing = build_openai_dataset_briefing(metadata.model_dump(), dataset_briefing)
+                    suggested_questions = dataset_briefing.suggested_questions[:3] or suggested_questions
+                    append_trace_event(
+                        trace,
+                        "build_openai_dataset_briefing",
+                        "succeeded",
+                        {
+                            "generator": dataset_briefing.generator,
+                            "model": dataset_briefing.model,
+                            "question_count": len(dataset_briefing.suggested_questions),
+                        },
+                    )
+                except Exception as exc:
+                    append_trace_event(
+                        trace,
+                        "build_openai_dataset_briefing",
+                        "failed",
+                        {"fallback": "deterministic"},
+                        error_message=str(exc),
+                    )
+            append_trace_event(
+                trace,
                 "suggest_questions",
                 "succeeded",
-                {"questions": [suggestion.question for suggestion in suggested_questions]},
+                {
+                    "questions": [suggestion.question for suggestion in suggested_questions],
+                    "briefing_generator": dataset_briefing.generator,
+                },
             )
             session = create_dataset_session(
                 dataset_id,
@@ -103,6 +135,8 @@ class DatasetIngestionService:
                     "suggested_questions": summarize_suggestions_for_langsmith(suggested_questions),
                     "briefing": {
                         "summary": dataset_briefing.summary,
+                        "generator": dataset_briefing.generator,
+                        "model": dataset_briefing.model,
                         "key_metrics": dataset_briefing.key_metrics,
                         "key_dimensions": dataset_briefing.key_dimensions,
                         "quality_warning_count": len(dataset_briefing.quality_warnings),

@@ -28,6 +28,7 @@ from core.langsmith_tracing import (
     tracing_status,
 )
 from core.llm_planner import LLM_PLANNER_VERSION, LLMPlannerUnavailable, llm_plan_question
+from core.llm_briefing import LLMBriefingUnavailable, build_openai_dataset_briefing
 from core.memory import MemoryStore, build_memory_context
 from core.planning import PlanningError, deterministic_plan, plan_question
 from core.question_suggestions import suggest_questions
@@ -268,6 +269,20 @@ class FoundationTests(unittest.TestCase):
             with self.assertRaisesRegex(LLMPlannerUnavailable, "OPENAI_API_KEY"):
                 llm_plan_question("Why did revenue change?", {"columns": []})
 
+    def test_openai_briefing_reports_missing_key_clearly(self):
+        df = pd.DataFrame({"region": ["East", "West"], "revenue": [10, 20]})
+        metadata = build_dataset_metadata(df, "sales.csv", b"region,revenue\nEast,10\nWest,20\n")
+        fallback = DatasetBriefing(
+            summary="fallback",
+            row_count=2,
+            column_count=2,
+            suggested_questions=[],
+        )
+
+        with patch.dict("os.environ", {"OPENAI_API_KEY": ""}, clear=False):
+            with self.assertRaisesRegex(LLMBriefingUnavailable, "OPENAI_API_KEY"):
+                build_openai_dataset_briefing(metadata, fallback)
+
     def test_plan_question_can_fallback_to_llm_when_enabled(self):
         df = pd.DataFrame({"region": ["East", "West"], "revenue": [10, 20]})
         metadata = build_dataset_metadata(df, "sales.csv", b"region,revenue\nEast,10\nWest,20\n")
@@ -330,6 +345,40 @@ class FoundationTests(unittest.TestCase):
             self.assertEqual(result.suggested_questions[0].question, "What is the total revenue?")
             self.assertEqual(session.suggested_questions[0]["question"], "What is the total revenue?")
             self.assertEqual(suggestions[1].question, "Count by region")
+
+    def test_dataset_tools_can_use_openai_briefing_when_enabled(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            ai_briefing = DatasetBriefing(
+                summary="AI briefing for sales.csv",
+                row_count=2,
+                column_count=2,
+                generator="openai",
+                model="test-model",
+                key_metrics=["revenue"],
+                key_dimensions=["region"],
+                suggested_questions=[
+                    SuggestedQuestion(
+                        question="Which region should I inspect first?",
+                        rationale="Mocked AI question.",
+                        question_type="analysis",
+                        columns=["region", "revenue"],
+                        priority=1,
+                    )
+                ],
+            )
+            with patch.dict("os.environ", {"OPENAI_BRIEFING_ENABLED": "true"}, clear=False):
+                with patch("core.ingestion.build_openai_dataset_briefing", return_value=ai_briefing):
+                    tools = DatasetTools(ArtifactStore(Path(temp_dir)))
+                    result = tools.ingest_csv_bytes(
+                        b"region,revenue\nEast,10\nWest,20\n",
+                        "sales.csv",
+                    )
+
+            session = load_session(tools.artifact_store, result.session_id)
+            self.assertEqual(result.dataset_briefing.generator, "openai")
+            self.assertEqual(result.dataset_briefing.model, "test-model")
+            self.assertEqual(result.suggested_questions[0].question, "Which region should I inspect first?")
+            self.assertEqual(session.dataset_briefing.generator, "openai")
 
     def test_dataset_tools_attaches_chart_payload_for_grouped_result(self):
         with tempfile.TemporaryDirectory() as temp_dir:
